@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="ohiSio">
+
+
+
+    <meta name="description" content="A pure elegant theme.">
+
+
+    <meta name="keywords" content="Sirice,Chic,Hexo">
+
+
+<title>状态BFS | Z&C</title>
+
+
+
+    <link rel="icon" href="/hexo-theme-Chic/ico.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/hexo-theme-Chic/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/hexo-theme-Chic/js/script.js"></script>
+    
+    <script src="/hexo-theme-Chic/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+            <!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+    });
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+        
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/hexo-theme-Chic/">Z&C&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/hexo-theme-Chic/archives">Posts</a>
+                
+                    <a class="menu-item" href="/hexo-theme-Chic/category">Categories</a>
+                
+                    <a class="menu-item" href="/hexo-theme-Chic/tag">Tags</a>
+                
+                    <a class="menu-item" href="/hexo-theme-Chic/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/hexo-theme-Chic/">Z&C&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/hexo-theme-Chic/archives">Posts</a>
+                
+                    <a class="menu-item" href="/hexo-theme-Chic/category">Categories</a>
+                
+                    <a class="menu-item" href="/hexo-theme-Chic/tag">Tags</a>
+                
+                    <a class="menu-item" href="/hexo-theme-Chic/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">状态BFS</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">🐯C</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">July 30, 2021&nbsp;&nbsp;17:24:33</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/hexo-theme-Chic/categories/Blogs/">Blogs</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+                    </h1>
+            <div class="postBody">
+<p>最近做各种各样的BFS题目（八数码，翻硬币，倒水问题，数字格子问题），方法大致是一样的，于是我整理成了自创算法<strong>状态BFS</strong>。<br>
+下面举例用<a href="http://124.205.120.153/problem/148" target="_blank">数字格子问题</a>（这道题题号148，前面3个题号对应另外三题）<br>
+原理和BFS差不多，用node结构体存储一个状态,用string存储状态，比如把：<br>
+7 6 5 8<br>
+2 3 4 1<br>
+改成<br>
+"76582341"。<br>
+node还要存储steps表示第几步。<br>
+因为这些题都问的是步数（有的还有做不到的情况），所以我们定义BFS是int。这里我们用map&lt;string,bool&gt;(倒水直接用二维数组)来表示状态是否出现过，防止重复计算，导致超时。<br>
+然后我们可以分几个函数来表示状态的变化，最后在bfs里面检查，如果可以添加就添加。<br>
+代码（加了注释）：</p>
+<pre><code class="language-cpp">#include&lt;iostream&gt;
+#include&lt;map&gt;
+#include&lt;queue&gt;//头文件
+using namespace std;
+string st;//初始状态
+const string end="12348765";//目标状态
+map&lt;string,bool&gt; mp;//去重
+struct node{
+	string str;
+	int steps;//状态和步数
+}t,noww;//noww是现在状态，t是辅助存储
+queue&lt;node&gt; q;//BFS必须用的
+void shuru(){//专门用一个输入
+	char c;
+	for(int i=1;i&lt;=8;i++){
+		cin&gt;&gt;c;
+		st+=c;
+	}
+}
+string l,a,b,c;//l省空间就避免重复定义,a,b,c是存储下面三个结果的
+string sxjh(string now){//上下交换 
+	l="";
+	for(int i=4;i&lt;8;i++) l+=now[i];
+	for(int i=0;i&lt;4;i++) l+=now[i];
+	return l;
+}
+string xypy(string now){//向右平移 
+	l=now[3];
+	for(int i=0;i&lt;3;i++) l+=now[i];
+	l+=now[7];
+	for(int i=4;i&lt;7;i++) l+=now[i]; 
+	return l;
+}
+string zjxz(string now){//中间旋转 
+	l=now[0];
+	l+=now[5];
+	l+=now[1];
+	l+=now[3];
+	l+=now[4];
+	l+=now[6];
+	l+=now[2];
+	l+=now[7];
+	return l;
+}
+int bfs(){//状态BFS
+	q.push(node{st,0});//初始状态
+	while(!q.empty()){
+		noww=q.front();
+		//cout&lt;&lt;"aba:"&lt;&lt;noww.str&lt;&lt;endl;
+		if(noww.str==end){//就是目标状态，直接结束
+			return noww.steps;
+		}
+		q.pop();
+		a=sxjh(noww.str);//分别存这三种结果
+		b=xypy(noww.str);
+		c=zjxz(noww.str);
+		//cout&lt;&lt;a&lt;&lt;","&lt;&lt;b&lt;&lt;","&lt;&lt;c&lt;&lt;endl;
+		if(!mp[a]){//没有出现过
+			mp[a]=1;//标记为出现过
+			t.str=a;
+			t.steps=noww.steps+1;//设定状态
+			q.push(t);//加入队列
+		}
+		if(!mp[b]){//同上
+			mp[b]=1;
+			t.str=b;
+			t.steps=noww.steps+1;
+			q.push(t);
+		}
+		if(!mp[c]){//同上
+			mp[c]=1;
+			t.str=c;
+			t.steps=noww.steps+1;
+			q.push(t);
+		}
+	}
+	return -1;//没有找到(虽然不可能，但是以防万一)就返回-1
+}
+int main(){
+	shuru();//输入
+	cout&lt;&lt;bfs()&lt;&lt;endl;//直接输出结果，如果可能做不到就要专门加一个判断是不是-1
+	return 0;
+}
+</code></pre>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>🐯C</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://ohisio.github.io/hexo-theme-Chic/2021/07/30/Status_BFS/">https://ohisio.github.io/hexo-theme-Chic/2021/07/30/Status_BFS/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>Do you believe in <strong>DESTINY</strong>?</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                    
+                        <a href="/hexo-theme-Chic/tags/test/"># algorithms</a>
+                    
+                        <a href="/hexo-theme-Chic/tags/markdown/"># markdown</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/hexo-theme-Chic/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/hexo-theme-Chic/2019/06/11/helloworld/">Hello World</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Z&C | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/ohiSio/hexo-theme-Chic" target="_blank">ohiSio</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
